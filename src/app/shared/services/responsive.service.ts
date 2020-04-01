@@ -1,8 +1,6 @@
 import { Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
-import { fromEvent, Observable, Subscription, of } from 'rxjs';
-import { map, startWith} from 'rxjs/internal/operators';
-
+import { fromEvent, Observable, of } from 'rxjs';
+import { map, startWith, take} from 'rxjs/internal/operators';
 
 export interface IConfig {
   mobile: number;
@@ -24,23 +22,21 @@ class Config implements IConfig {
 })
 export class ResponsiveService {
 
-  resizeObservable$: Observable<Event>;
-  resizeSubscription$: Subscription;
-
-  config: IConfig;
-
   constructor() {
+  }
 
-   }
-
-  public getWindowSize(): Observable<number> {
+  public getWindowSizeObservable(): Observable<number> {
     return fromEvent(window, 'resize').pipe(
-      map(event => (event.target as Window).innerWidth),
+      map(event => {
+        const width = (event.target as Window).innerWidth;
+        console.log('resize event', width);
+        return width;
+      }),
       startWith(window.innerWidth)
     );
   }
 
-  public getConfig(): Observable<IConfig> {
+  public getConfigObservable(): Observable<IConfig> {
     return of(new Config(480, 1024));
   }
 
