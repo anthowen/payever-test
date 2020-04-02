@@ -40,11 +40,10 @@ export class OnlyForScreenDirective implements OnInit, OnDestroy {
     this.modeCheckSubscription = this.modeCheck$
     .pipe(
       tap(mode => {
-        console.log(mode, this.mode);
         if (this.mode === mode && !this.created) {
           this.viewContainer.createEmbeddedView(this.templateRef);
           this.created = true;
-        } else {
+        } else if (this.mode !== mode && this.created) {
           this.created = false;
           this.viewContainer.clear();
         }
@@ -63,4 +62,3 @@ export class OnlyForScreenDirective implements OnInit, OnDestroy {
     this.mode = mode;
   }
 }
- 

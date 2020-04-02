@@ -27,11 +27,7 @@ export class ResponsiveService {
 
   public getWindowSizeObservable(): Observable<number> {
     return fromEvent(window, 'resize').pipe(
-      map(event => {
-        const width = (event.target as Window).innerWidth;
-        console.log('resize event', width);
-        return width;
-      }),
+      map(event => (event.target as Window).innerWidth),
       startWith(window.innerWidth)
     );
   }
