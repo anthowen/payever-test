@@ -1,7 +1,7 @@
 import { Directive, Input, TemplateRef, ViewContainerRef, OnInit, OnDestroy } from '@angular/core';
 import { ResponsiveService } from '../services/responsive.service';
 import { combineLatest, Observable, Subscription } from 'rxjs';
-import { take, tap } from 'rxjs/internal/operators';
+import { take, tap, shareReplay } from 'rxjs/internal/operators';
 import { IConfig } from '../services/responsive.service';
 import { map } from 'rxjs/internal/operators';
 
@@ -13,6 +13,7 @@ export class OnlyForScreenDirective implements OnInit, OnDestroy {
   modeCheck$: Observable<string>;
   modeCheckSubscription: Subscription;
   mode: string;
+  created: boolean = false;
 
   constructor(
     private templateRef: TemplateRef<any>,
@@ -32,13 +33,22 @@ export class OnlyForScreenDirective implements OnInit, OnDestroy {
           curMode = 'desktop';
         }
         return curMode;
-      })
+      }),
+      shareReplay(1)
     );
 
     this.modeCheckSubscription = this.modeCheck$
     .pipe(
-      take(1),
-      tap(mode => this.mode = mode)
+      tap(mode => {
+        console.log(mode, this.mode);
+        if (this.mode === mode && !this.created) {
+          this.viewContainer.createEmbeddedView(this.templateRef);
+          this.created = true;
+        } else {
+          this.created = false;
+          this.viewContainer.clear();
+        }
+      }),
     )
     .subscribe();
   }
@@ -50,10 +60,7 @@ export class OnlyForScreenDirective implements OnInit, OnDestroy {
   }
 
   @Input() set onlyForScreen(mode: string) {
-    if (this.mode === mode) {
-      this.viewContainer.createEmbeddedView(this.templateRef);
-    } else {
-      this.viewContainer.clear();
-    }
+    this.mode = mode;
   }
 }
+ 
